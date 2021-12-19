@@ -1,0 +1,31 @@
+@import "../Common/common.scss";
+
+.container {
+  height: 100%;
+  @extend .flexCol;
+  justify-content: space-between;
+  // width: 4rem;
+  padding: 10px 0;
+  background: var(--primaryColor);
+
+  .logo {
+    background: var(--primaryColor);
+    padding: 5px;
+    border-radius: 2px;
+
+    h4 {
+      font-weight: 700;
+      margin: auto;
+      width: fit-content;
+      color: var(--secondaryColor);
+      font-family: "Playfair Display", serif;
+    }
+  }
+
+  .actions {
+    @extend .flexCol;
+    .actionItem {
+      margin: 15px 0;
+    }
+  }
+}

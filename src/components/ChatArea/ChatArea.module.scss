@@ -1,0 +1,95 @@
+@import "../Common/common.scss";
+
+.container {
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.04);
+  width: 100%;
+
+  .topbar {
+    width: 100%;
+    // border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    height: 60px;
+    background: white;
+    @extend .flexRow;
+    justify-content: flex-start;
+    padding: 10px 20px;
+    h4 {
+      font-family: "Playfair Display", sans-serif;
+      text-transform: capitalize;
+    }
+  }
+  .chatArea {
+    height: calc(100% - 60px);
+    position: relative;
+    padding: 10px 20px;
+    .inputArea {
+      @extend .flexRow;
+      align-items: flex-start;
+      position: absolute;
+      bottom: 2%;
+      left: 2%;
+      width: 96%;
+      //   background: white;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 5px;
+      overflow: hidden;
+      //   @extend .flexRow;
+      textarea {
+        background: transparent !important;
+        border: none;
+        height: 100%;
+        outline: none;
+        width: 100%;
+        padding: 10px;
+        resize: none;
+      }
+      .actionBtns {
+        @extend .flexRow;
+      }
+    }
+    overflow-x: auto;
+    overflow-y: hidden;
+    .viewArea {
+      height: 90%;
+      // overflow-x: hidden;
+      // overflow-y: scroll;
+      @extend .flexCol;
+      justify-content: flex-end;
+      .message {
+        @extend .flexCol;
+        align-items: flex-end;
+        width: 100%;
+        padding: 5px;
+        margin: 5px 0;
+        .msgInner {
+          border-radius: 5px;
+          background: var(--secondaryColor);
+          padding: 10px;
+          p {
+            color: var(--primaryColor);
+            text-align: right;
+          }
+          z-index: 2;
+        }
+        span {
+          font-size: 0.6rem;
+          color: #25323791;
+          font-weight: 600;
+          margin-top: -20px;
+          transition: all 0.2s ease-in-out;
+        }
+        &:hover {
+          span {
+            margin-top: 5px;
+          }
+        }
+      }
+      .sender {
+        align-items: flex-start;
+        .msgInner {
+          background: rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+  }
+}
