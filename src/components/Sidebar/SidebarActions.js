@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import styles from "./SidebarActions.module.scss";
 import { MessageCircle, LogOut, Copy } from "react-feather";
 import { IconButton, Avatar, Tooltip, makeStyles } from "@material-ui/core";
 import portrait from "../../Assets/portrait.jpg";
 import { useParams } from "react-router-dom";
-import { auth } from "../../utils/auth/firebase";
+import { auth, firebase } from "../../utils/auth/firebase";
+import { AuthContext } from "../../utils/auth/AuthContext";
 
 const SidebarActions = () => {
   const classes = useStyles();
   const [current, setCurrent] = useState("Chat");
+
+  const { currentUser } = useContext(AuthContext);
 
   const { room } = useParams();
 
@@ -21,6 +24,10 @@ const SidebarActions = () => {
       name: "Logout",
       icon: LogOut,
       onClick: () => {
+        firebase
+          .database()
+          .ref("/status/" + currentUser.uid)
+          .update({ state: "offline" });
         auth.signOut();
       },
     },

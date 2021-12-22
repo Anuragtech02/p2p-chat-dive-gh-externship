@@ -60,19 +60,6 @@ const GlobalContextProvider = ({ children }) => {
 
     return () => {
       database.ref("messages").off();
-      if (Object.values(onlinePeople)?.length) {
-        let keyToBeRemoved = null;
-        for (let [key, val] of Object.entries(onlinePeople)) {
-          if (val === currentUser?.email) {
-            keyToBeRemoved = key;
-            break;
-          }
-          console.log({ key, val, onlinePeople });
-        }
-
-        console.log({ keyToBeRemoved, currentUser });
-        if (keyToBeRemoved) database.ref("online").remove(keyToBeRemoved);
-      }
     };
   }, [currentUser, onlinePeople]);
 

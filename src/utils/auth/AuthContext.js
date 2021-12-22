@@ -7,6 +7,7 @@ import { v4 as uuid } from "uuid";
 export const AuthContext = createContext({});
 
 const GLOBAL_REF = firestore.collection("global").doc("global");
+const ONLINE_REF = database.ref("online");
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -24,7 +25,6 @@ export const AuthProvider = ({ children }) => {
         ...doc.data(),
       }));
       setUserDetails(userData[0]);
-      await database.ref("online").push(userData[0].email);
       setPending(false);
     };
     const checkUser = () => {
@@ -37,6 +37,39 @@ export const AuthProvider = ({ children }) => {
     };
     checkUser();
   }, []);
+
+  useEffect(() => {
+    let isOfflineForDatabase = {
+      state: "offline",
+      last_changed: firebase.database.ServerValue.TIMESTAMP,
+    };
+
+    let isOnlineForDatabase = {
+      state: "online",
+      last_changed: firebase.database.ServerValue.TIMESTAMP,
+    };
+
+    if (currentUser?.uid) {
+      const STATUS_DB_REF = firebase
+        .database()
+        .ref("/status/" + currentUser.uid);
+      firebase
+        .database()
+        .ref(".info/connected")
+        .on("value", function (snapshot) {
+          // If we're not currently connected, don't do anything.
+          if (snapshot.val() == false) {
+            return;
+          }
+
+          STATUS_DB_REF.onDisconnect()
+            .set(isOfflineForDatabase)
+            .then(function () {
+              STATUS_DB_REF.set(isOnlineForDatabase);
+            });
+        });
+    }
+  }, [currentUser]);
 
   if (pending) {
     return (
@@ -96,4 +129,8 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+const getServerTimestamp = () => {
+  return firebase.database.ServerValue.TIMESTAMP;
 };
