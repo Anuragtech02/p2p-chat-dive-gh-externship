@@ -5,49 +5,96 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { AuthContext } from "../../components/Contexts/AuthContext";
-import { useSocket } from "../../components/Contexts/SocketContextProvider";
+import { AuthContext } from "../auth/AuthContext";
+import { database, firestore } from "../auth/firebase";
+// import { useSocket } from "../../components/Contexts/SocketContextProvider";
 
 export const GlobalContext = createContext({});
 
 const GlobalContextProvider = ({ children }) => {
-  const [messages, setMessages] = useState(new Map());
+  const [messages, setMessages] = useState({});
+  const [onlinePeople, setOnlinePeople] = useState({});
+  const [offlinePeople, setOfflinePeople] = useState([]);
+  const [currentChat, setCurrentChat] = useState({});
 
-  const { currentUser } = useContext(AuthContext);
-  const { socket } = useSocket();
-
-  const addMessageToState = useCallback(
-    (to, msg) => {
-      const newMessages = new Map(messages);
-      const prev = newMessages.get(to) || {};
-      const prevMessages = prev?.messages || [];
-      newMessages.set(to, {
-        newMessage: msg.message,
-        messages: [...prevMessages, msg],
-      });
-      setMessages(newMessages);
-    },
-    [messages]
-  );
+  const { currentUser, userDetails, allUsers, setAllUsers } =
+    useContext(AuthContext);
 
   useEffect(() => {
-    if (socket && currentUser) {
-      socket.on("receive-message", (msg) => {
-        console.log({ msg });
-        if (msg.recepient.toLowerCase() === currentUser.name.toLowerCase()) {
-          addMessageToState(msg.sender, msg);
-        }
+    database.ref("online").on("value", (snapshot) => {
+      const online = snapshot.val() || {};
+      setOnlinePeople(online);
+    });
+
+    return () => {
+      database.ref("online").off();
+    };
+  }, []);
+
+  useEffect(() => {
+    const db = firestore.collection("global").doc("global");
+    const fetchAllUsers = async () => {
+      const snapshot = await db.get();
+      const allUsers = snapshot.data().users || [];
+      setAllUsers(allUsers);
+    };
+    fetchAllUsers();
+  }, [setAllUsers]);
+
+  useEffect(() => {
+    if (allUsers?.length || onlinePeople?.length) {
+      const offline = allUsers.filter(
+        (user) => !Object.values(onlinePeople).includes(user)
+      );
+      setOfflinePeople(offline);
+    }
+  }, [onlinePeople, allUsers]);
+
+  useEffect(() => {
+    if (currentUser?.email) {
+      database.ref("messages").on("value", (snapshot) => {
+        const messages = snapshot.val();
+        setMessages(messages);
       });
     }
-  }, [currentUser, socket, addMessageToState]);
 
-  const sendMessage = (msg) => {
-    addMessageToState(msg.recepient, msg);
-    if (socket) socket.emit("send-message", msg);
+    return () => {
+      database.ref("messages").off();
+      if (Object.values(onlinePeople)?.length) {
+        let keyToBeRemoved = null;
+        for (let [key, val] of Object.entries(onlinePeople)) {
+          if (val === currentUser?.email) {
+            keyToBeRemoved = key;
+            break;
+          }
+          console.log({ key, val, onlinePeople });
+        }
+
+        console.log({ keyToBeRemoved, currentUser });
+        if (keyToBeRemoved) database.ref("online").remove(keyToBeRemoved);
+      }
+    };
+  }, [currentUser, onlinePeople]);
+
+  const sendMessage = (msg, isNew = false) => {
+    database.ref(`messages/${msg.roomId}`).once("value", (snapshot) => {
+      const msgs = snapshot.val() || [];
+      msgs.push(msg);
+      database.ref("messages").set(msgs);
+    });
   };
 
   return (
-    <GlobalContext.Provider value={{ messages, sendMessage }}>
+    <GlobalContext.Provider
+      value={{
+        messages,
+        onlinePeople,
+        offlinePeople,
+        sendMessage,
+        currentChat,
+        setCurrentChat,
+      }}
+    >
       {children}
     </GlobalContext.Provider>
   );

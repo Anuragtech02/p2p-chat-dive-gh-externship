@@ -4,24 +4,25 @@ import SidebarActions from "./SidebarActions";
 import { Search } from "react-feather";
 import { Avatar } from "@material-ui/core";
 import portraitIcon from "../../Assets/portrait.jpg";
-import { withRouter, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import clsx from "clsx";
-import { useSocket } from "../Contexts/SocketContextProvider";
-import { AuthContext } from "../Contexts/AuthContext";
-import { GlobalContext } from "../Contexts/GlobalContext";
+import { AuthContext } from "../../utils/auth/AuthContext";
+import { GlobalContext } from "../../utils/contexts/GlobalContext";
 
-const Sidebar = ({ history }) => {
+const Sidebar = () => {
   const [search, setSearch] = useState("");
   const [current, setCurrent] = useState("");
   const [users, setUsers] = useState();
   const [usersCopy, setUsersCopy] = useState();
 
+  const navigate = useNavigate();
+
   const handleClickChat = (name) => {
-    history.push(`/${room}/chat/${name}`);
+    navigate(`/${room}/chat/${name}`);
   };
 
   const { name, room } = useParams();
-  const { roomData } = useSocket();
+  // const { roomData } = useSocket();
   const { currentUser } = useContext(AuthContext);
   const { messages } = useContext(GlobalContext);
 
@@ -29,15 +30,15 @@ const Sidebar = ({ history }) => {
     setCurrent(name);
   }, [name]);
 
-  React.useEffect(() => {
-    if (roomData?.room && currentUser?.name) {
-      const data = roomData.users?.filter(
-        (user) => user.name.toLowerCase() !== currentUser.name.toLowerCase()
-      );
-      setUsers(data);
-      setUsersCopy(data);
-    }
-  }, [roomData, currentUser]);
+  // React.useEffect(() => {
+  //   if (roomData?.room && currentUser?.name) {
+  //     const data = roomData.users?.filter(
+  //       (user) => user.name.toLowerCase() !== currentUser.name.toLowerCase()
+  //     );
+  //     setUsers(data);
+  //     setUsersCopy(data);
+  //   }
+  // }, [roomData, currentUser]);
 
   return (
     <aside className={styles.container}>
@@ -91,4 +92,4 @@ const Sidebar = ({ history }) => {
   );
 };
 
-export default withRouter(Sidebar);
+export default Sidebar;

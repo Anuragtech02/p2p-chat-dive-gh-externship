@@ -11,12 +11,14 @@
     "axios": "^0.21.1",
     "clsx": "^1.1.1",
     "emoji-picker-react": "^3.4.4",
+    "firebase": "^9.6.1",
     "moment": "^2.29.1",
     "node-sass": "^7.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-feather": "^2.0.9",
-    "react-router-dom": "^5.2.0",
+    "react-router": "^6.2.1",
+    "react-router-dom": "^6.2.1",
     "react-scripts": "4.0.3",
     "sass": "^1.45.0",
     "short-uuid": "^4.1.0",
@@ -29,7 +31,6 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "proxy": "https://realtime-chat-rn.herokuapp.com/",
   "eslintConfig": {
     "extends": [
       "react-app",

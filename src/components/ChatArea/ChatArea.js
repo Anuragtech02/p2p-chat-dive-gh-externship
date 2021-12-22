@@ -1,21 +1,23 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
-import { useParams, withRouter } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import styles from "./ChatArea.module.scss";
 import Picker, { SKIN_TONE_MEDIUM_DARK } from "emoji-picker-react";
 import { IconButton, Menu, MenuItem } from "@material-ui/core";
 import { Send, Smile } from "react-feather";
-import { GlobalContext } from "../Contexts/GlobalContext";
-import { AuthContext } from "../Contexts/AuthContext";
-import { useSocket } from "../Contexts/SocketContextProvider";
+import { GlobalContext } from "../../utils/contexts/GlobalContext";
+import { AuthContext } from "../../utils/auth/AuthContext";
+// import { useSocket } from "../Contexts/SocketContextProvider";
 import clsx from "clsx";
 import moment from "moment";
+import shortUUID from "short-uuid";
 
 // const ENDPOINT = "http://localhost:5000/";
 
 const ChatArea = () => {
-  const { name, room } = useParams();
+  const { room } = useParams();
   const [anchor, setAnchor] = useState(null);
   const [message, setMessage] = useState("");
+  const [name, setName] = useState("");
 
   const textAreaRef = useRef();
 
@@ -36,29 +38,38 @@ const ChatArea = () => {
   const handleClose = () => {
     setAnchor(null);
   };
-  const { messages, sendMessage } = useContext(GlobalContext);
-  const { currentUser } = useContext(AuthContext);
-  const { socket, setRoomData } = useSocket();
+  const { messages, sendMessage, currentChat, setCurrentChat } =
+    useContext(GlobalContext);
+  const { currentUser, userDetails } = useContext(AuthContext);
+  // const { socket, setRoomData } = useSocket();
+
+  // useEffect(() => {
+  //   socket.on("connect", () => {
+  //     console.log("FCon");
+  //   });
+  //   socket.on("room-data", (data) => {
+  //     console.log({ data });
+  //     setRoomData(data);
+  //   });
+  // }, [socket, setRoomData]);
 
   useEffect(() => {
-    socket.on("connect", () => {
-      console.log("FCon");
-    });
-    socket.on("room-data", (data) => {
-      console.log({ data });
-      setRoomData(data);
-    });
-  }, [socket, setRoomData]);
+    setName(currentChat?.name);
+  }, [currentChat]);
 
   const handleMessageSubmit = (e) => {
     e.preventDefault();
     if (!message) return;
     const newMessage = {
-      sender: currentUser.name?.toLowerCase(),
-      recepient: name?.toLowerCase(),
+      id: `${room}_MSG${shortUUID()}`,
+      author: userDetails.name?.toLowerCase(),
+      recepient: currentChat?.name?.toLowerCase(),
       room,
       message,
-      date: moment().format("DD/MM/YY"),
+      isSent: false,
+      isRead: false,
+      isDelivered: false,
+      createdAt: new Date().toISOString(),
     };
 
     sendMessage(newMessage);
@@ -72,20 +83,20 @@ const ChatArea = () => {
   };
 
   useEffect(() => {
-    console.log(messages?.get(name?.toLowerCase()), messages);
-  }, [messages, name]);
+    console.log(messages[room], messages);
+  }, [messages, room]);
 
   return (
     <div className={styles.container}>
       <Topbar name={name} />
       <div className={styles.chatArea}>
         <div className={styles.viewArea}>
-          {messages?.get(name?.toLowerCase())?.messages?.map((msg, i) => (
+          {messages[room?.toLowerCase()]?.map((msg, i) => (
             <MessageComponent
               key={i}
               msg={msg}
               cls={
-                msg.sender.toLowerCase() === name.toLowerCase()
+                msg.author.toLowerCase() === userDetails?.name.toLowerCase()
                   ? styles.sender
                   : styles.owner
               }
@@ -102,7 +113,9 @@ const ChatArea = () => {
             disabled={Boolean(!name)}
             required
             placeholder={
-              name ? "Enter something" : "Please select a contact to start"
+              name?.length
+                ? "Enter something"
+                : "Please select a contact to start"
             }
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -151,7 +164,7 @@ const ChatArea = () => {
   );
 };
 
-export default withRouter(ChatArea);
+export default ChatArea;
 
 const Topbar = ({ name }) => {
   return (

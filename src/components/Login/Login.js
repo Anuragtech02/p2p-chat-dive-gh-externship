@@ -1,41 +1,60 @@
 import React, { useState, useContext, useEffect } from "react";
 import styles from "./Login.module.scss";
 import { Button, CircularProgress } from "@material-ui/core";
-import { AuthContext } from "../Contexts/AuthContext";
-import { withRouter } from "react-router-dom";
-import short from "short-uuid";
-import { useSocket } from "../Contexts/SocketContextProvider";
+import { AuthContext } from "../../utils/auth/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-const Login = ({ history }) => {
+const Login = () => {
   const [name, setName] = useState("");
-  const [room, setRoom] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
 
-  const { currentUser, handleChangeUser } = useContext(AuthContext);
-  const { socket } = useSocket();
+  const navigate = useNavigate();
+
+  const { currentUser, handleClickLogin, createNewUser } =
+    useContext(AuthContext);
 
   useEffect(() => {
-    if (currentUser?.name && room?.length && !loading) {
-      if (socket) {
-        socket.emit("join", { name, room });
-      }
-      history.push(`/${room}`);
+    if (currentUser?.email) {
+      console.log({ navigate });
+      navigate(`/`);
     }
-  }, [currentUser, history, loading, room, socket, name]);
+  }, [currentUser, navigate]);
 
   const onSubmit = (e) => {
     e.preventDefault();
-    if (!name?.trim().length) {
-      alert("Please enter valid name");
+    setLoading(true);
+    if (!email?.trim().length) {
+      alert("Please enter valid email");
+      setLoading(false);
       return;
     }
-    const sUid = short.generate().slice(0, 10);
-    if (!room?.trim().length) setRoom(sUid);
-    setLoading(true);
-    setTimeout(() => {
-      handleChangeUser({ name, room: room || sUid });
-      setLoading(false);
-    }, 1000);
+
+    if (!isNewUser) {
+      handleClickLogin(email, password, (err) => {
+        setLoading(false);
+        if (err) {
+          if (err?.toString()?.includes("no user record")) {
+            alert("User not found");
+          } else {
+            alert("Some error occured");
+          }
+          console.error(err);
+          setLoading(false);
+        }
+      });
+    } else {
+      createNewUser(name, email, password, (err) => {
+        setLoading(false);
+        if (err) {
+          alert("Some error occured");
+          console.error(err);
+          setLoading(false);
+        }
+      });
+    }
   };
 
   return (
@@ -43,23 +62,34 @@ const Login = ({ history }) => {
       <h4>Realtime Chat</h4>
       <form onSubmit={onSubmit}>
         <p>Please Enter Following Details</p>
+        {isNewUser && (
+          <input
+            value={name}
+            type="text"
+            required
+            placeholder="Name"
+            onChange={(e) => setName(e.target.value)}
+          />
+        )}
         <input
-          value={name}
+          value={email}
           type="text"
-          disabled={loading}
           required
-          placeholder="Name"
-          onChange={(e) => setName(e.target.value)}
+          placeholder="Email"
+          onChange={(e) => setEmail(e.target.value)}
         />
         <input
-          value={room}
-          type="text"
-          disabled={loading}
-          placeholder="Room ID (optional)"
-          onChange={(e) => setRoom(e.target.value)}
+          value={password}
+          type="password"
+          required
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
         />
-        <span className={styles.helperText}>
-          Leave empty to create a new room
+        <span
+          className={styles.helperText}
+          onClick={() => setIsNewUser(!isNewUser)}
+        >
+          {isNewUser ? "Login" : "New User?"}
         </span>
         <Button className={styles.submitBtn} variant="text" type="submit">
           Submit
@@ -75,4 +105,4 @@ const Login = ({ history }) => {
   );
 };
 
-export default withRouter(Login);
+export default Login;

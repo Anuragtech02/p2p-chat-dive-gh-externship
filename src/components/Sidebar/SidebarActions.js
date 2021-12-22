@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import styles from "./SidebarActions.module.scss";
-import { MessageCircle, User, Copy } from "react-feather";
+import { MessageCircle, LogOut, Copy } from "react-feather";
 import { IconButton, Avatar, Tooltip, makeStyles } from "@material-ui/core";
 import portrait from "../../Assets/portrait.jpg";
 import { useParams } from "react-router-dom";
+import { auth } from "../../utils/auth/firebase";
 
 const SidebarActions = () => {
   const classes = useStyles();
@@ -17,9 +18,11 @@ const SidebarActions = () => {
 
   const actions = [
     {
-      name: "Account",
-      icon: User,
-      onClick: () => {},
+      name: "Logout",
+      icon: LogOut,
+      onClick: () => {
+        auth.signOut();
+      },
     },
     {
       name: "Chat",

@@ -1,42 +1,42 @@
 import React from "react";
 import styles from "./App.module.scss";
-import {
-  BrowserRouter as Router,
-  Redirect,
-  Route,
-  Switch,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Login, ChatArea, Sidebar } from "./components";
-import PrivateRoute from "./components/PrivateRoute/PrivateRoute";
-import AuthContextProvider from "./components/Contexts/AuthContext";
+import PrivateRoute from "./utils/auth/PrivateRoute";
+import { AuthProvider } from "./utils/auth/AuthContext";
 import GlobalContextProvider from "./utils/contexts/GlobalContext";
-import SocketContextProvider from "./utils/contexts/SocketContextProvider";
 
 const App = () => {
   return (
-    <AuthContextProvider>
-      <SocketContextProvider>
+    <AuthProvider>
+      <GlobalContextProvider>
         <Router>
           <div className={styles.container}>
-            <Switch>
-              <Route path="/" exact component={Login} />
-              <GlobalContextProvider>
-                <PrivateRoute
-                  path="/:room"
-                  exact
-                  component={() => <WithSidebar component={ChatArea} />}
-                />
-                <PrivateRoute
-                  path="/:room/chat/:name"
-                  exact
-                  component={() => <WithSidebar component={ChatArea} />}
-                />
-              </GlobalContextProvider>
-            </Switch>
+            <Routes>
+              <Route path="/login" exact element={<Login />} />
+              <Route
+                path="/"
+                exact
+                element={
+                  <PrivateRoute>
+                    <WithSidebar component={ChatArea} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/:room"
+                exact
+                element={
+                  <PrivateRoute>
+                    <WithSidebar component={ChatArea} />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
           </div>
         </Router>
-      </SocketContextProvider>
-    </AuthContextProvider>
+      </GlobalContextProvider>
+    </AuthProvider>
   );
 };
 
