@@ -64,22 +64,33 @@
         padding: 5px;
         margin: 5px 0;
         .msgInner {
+          position: relative;
           border-radius: 5px;
           background: var(--secondaryColor);
           padding: 10px;
+          // @extend .flexCol;
+          // justify-content: center;
           p {
             color: var(--primaryColor);
             text-align: right;
+            // margin-right: 2.5rem;
           }
           z-index: 2;
+
+          .messageStatus {
+            position: absolute;
+            transform: scale(0.6);
+            right: 5px;
+            bottom: 0;
+          }
         }
-        span {
-          font-size: 0.6rem;
-          color: #25323791;
-          font-weight: 600;
-          margin-top: -20px;
-          transition: all 0.2s ease-in-out;
-        }
+        // span {
+        //   font-size: 0.6rem;
+        //   color: #25323791;
+        //   font-weight: 600;
+        //   margin-top: -20px;
+        //   transition: all 0.2s ease-in-out;
+        // }
         &:hover {
           span {
             margin-top: 5px;

@@ -54,6 +54,21 @@ const GlobalContextProvider = ({ children }) => {
     if (currentUser?.email) {
       database.ref("messages").on("value", (snapshot) => {
         const messages = snapshot.val();
+
+        Object.values(messages).forEach((roomMessage) => {
+          if (roomMessage) {
+            Object.values(roomMessage).forEach((message) => {
+              if (
+                !message.isDelivered &&
+                !message.isRead &&
+                message.recipient === currentUser.uid
+              ) {
+                console.log("inside");
+                updateMessageAsDelivered(message.roomId, message.id);
+              }
+            });
+          }
+        });
         setMessages(messages);
       });
     }
@@ -68,7 +83,12 @@ const GlobalContextProvider = ({ children }) => {
   }, [currentUser, userDetails, onlinePeople, allUsers]);
 
   const sendMessage = async (msg, isNew = false) => {
-    await database.ref("messages").child(msg.roomId).push(msg);
+    let key = database.ref("messages").child(msg.roomId).push().key;
+    await database
+      .ref("messages")
+      .child(msg.roomId)
+      .child(key)
+      .set({ ...msg, id: key });
     console.log({ msg });
     if (
       userDetails.chats.findIndex((item) => item.roomId === msg.roomId) === -1
@@ -85,6 +105,19 @@ const GlobalContextProvider = ({ children }) => {
     }
   };
 
+  function updateMessageAsDelivered(roomId, id) {
+    database.ref("messages").child(roomId).child(id).update({
+      isDelivered: true,
+    });
+  }
+
+  function updateMessageAsRead(roomId, id) {
+    database.ref("messages").child(roomId).child(id).update({
+      isDelivered: true,
+      isRead: true,
+    });
+  }
+
   return (
     <GlobalContext.Provider
       value={{
@@ -93,6 +126,8 @@ const GlobalContextProvider = ({ children }) => {
         sendMessage,
         currentChat,
         setCurrentChat,
+        updateMessageAsDelivered,
+        updateMessageAsRead,
       }}
     >
       {children}

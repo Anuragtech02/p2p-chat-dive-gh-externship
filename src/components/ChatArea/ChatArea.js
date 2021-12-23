@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import styles from "./ChatArea.module.scss";
 import Picker, { SKIN_TONE_MEDIUM_DARK } from "emoji-picker-react";
 import { IconButton, Menu, MenuItem } from "@material-ui/core";
-import { Send, Smile } from "react-feather";
+import { Check, Send, Smile } from "react-feather";
 import { GlobalContext } from "../../utils/contexts/GlobalContext";
 import { AuthContext } from "../../utils/auth/AuthContext";
 // import { useSocket } from "../Contexts/SocketContextProvider";
@@ -79,7 +79,7 @@ const ChatArea = () => {
       recipientName: currentChat.name,
       roomId: room,
       message,
-      isSent: false,
+      isSent: true,
       isRead: false,
       isDelivered: false,
       createdAt: new Date().toISOString(),
@@ -115,6 +115,7 @@ const ChatArea = () => {
                     ? styles.sender
                     : styles.receiver
                 }
+                displayStatus={msg.author === userDetails?.uid}
               />
             ))}
         </div>
@@ -189,13 +190,60 @@ const Topbar = ({ name }) => {
   );
 };
 
-const MessageComponent = ({ msg, cls }) => {
+const MessageComponent = ({ msg, cls, displayStatus }) => {
+  const { updateMessageAsRead } = useContext(GlobalContext);
+  const { currentUser } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (msg.id) {
+      if (
+        (msg.isSent || msg.isDelivered) &&
+        !msg.isRead &&
+        msg.author !== currentUser.uid
+      ) {
+        updateMessageAsRead(msg.roomId, msg.id);
+      }
+    }
+  }, [msg, updateMessageAsRead, currentUser]);
+
   return (
     <div className={clsx(styles.message, cls)}>
       <div className={styles.msgInner}>
-        <p>{msg.message}</p>
+        <p style={{ marginRight: displayStatus ? "2.5rem" : "0px" }}>
+          {msg.message}
+        </p>
+        {displayStatus && (
+          <span className={styles.messageStatus}>{getMessagStaus(msg)}</span>
+        )}
       </div>
       {/* <span>{msg.date}</span> */}
     </div>
   );
+};
+
+const getMessagStaus = (msg) => {
+  if (!msg) return;
+  if (msg.isRead) {
+    return (
+      <span className={styles.read}>
+        <Check fontSize="5px" color="white" />
+        <Check fontSize="5px" color="white" />
+      </span>
+    );
+  }
+  if (msg.isDelivered) {
+    return (
+      <span className={styles.delivered}>
+        <Check fontSize="5px" />
+        <Check fontSize="5px" />
+      </span>
+    );
+  }
+  if (msg.isSent) {
+    return (
+      <span className={styles.sent}>
+        <Check fontSize="5px" />
+      </span>
+    );
+  }
 };
