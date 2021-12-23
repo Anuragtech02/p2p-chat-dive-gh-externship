@@ -20,16 +20,18 @@ const Sidebar = () => {
   const { name, room } = useParams();
   // const { roomData } = useSocket();
   const { allUsers, userDetails } = useContext(AuthContext);
-  const { messages, onlinePeople } = useContext(GlobalContext);
+  const { onlinePeople, setCurrentChat } = useContext(GlobalContext);
 
-  const handleClickChat = (email, uid) => {
+  const handleClickChat = (name, email, uid) => {
     let roomId = getRoomId(email, userDetails.chats);
     if (roomId?.length) {
+      setCurrentChat({ name, uid });
       navigate(`/${roomId}`);
       return;
     }
 
     roomId = creatRoom([userDetails.uid, uid]);
+    setCurrentChat({ name, uid });
     navigate(`/${roomId}`);
   };
 
@@ -39,6 +41,9 @@ const Sidebar = () => {
 
   useEffect(() => {
     console.log({ allUsers, onlinePeople });
+    if (allUsers?.length) {
+      setUsers(allUsers.map((chat) => getUserData(allUsers, chat.uid)));
+    }
   }, [allUsers, onlinePeople]);
 
   // useEffect(() => {
@@ -77,12 +82,14 @@ const Sidebar = () => {
         </div>
         <div className={styles.chats}>
           <h6>My Chats</h6>
-          {allUsers.length ? (
-            allUsers
-              .map((chat) => getUserData(allUsers, chat.uid))
+          {users?.length ? (
+            users
+              .map((chat) => getUserData(users, chat.uid))
               .map((chat, i) => (
                 <div
-                  onClick={() => handleClickChat(chat?.name)}
+                  onClick={() =>
+                    handleClickChat(chat?.name, chat?.email, chat?.uid)
+                  }
                   key={i}
                   className={clsx(
                     styles.chat,

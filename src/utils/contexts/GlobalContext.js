@@ -67,12 +67,22 @@ const GlobalContextProvider = ({ children }) => {
     console.log({ currentUser, userDetails, onlinePeople, allUsers });
   }, [currentUser, userDetails, onlinePeople, allUsers]);
 
-  const sendMessage = (msg, isNew = false) => {
-    database.ref(`messages/${msg.roomId}`).once("value", (snapshot) => {
-      const msgs = snapshot.val() || [];
-      msgs.push(msg);
-      database.ref("messages").set(msgs);
-    });
+  const sendMessage = async (msg, isNew = false) => {
+    await database.ref("messages").child(msg.roomId).push(msg);
+    console.log({ msg });
+    if (
+      userDetails.chats.findIndex((item) => item.roomId === msg.roomId) === -1
+    ) {
+      await firestore
+        .collection("users")
+        .doc(currentUser.uid)
+        .update({
+          chats: [
+            ...userDetails.chats,
+            { roomId: msg.roomId, uid: msg.recipient, name: msg.recipientName },
+          ],
+        });
+    }
   };
 
   return (

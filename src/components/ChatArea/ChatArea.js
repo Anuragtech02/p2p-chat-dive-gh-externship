@@ -9,7 +9,7 @@ import { AuthContext } from "../../utils/auth/AuthContext";
 // import { useSocket } from "../Contexts/SocketContextProvider";
 import clsx from "clsx";
 import moment from "moment";
-import shortUUID from "short-uuid";
+import short from "short-uuid";
 
 // const ENDPOINT = "http://localhost:5000/";
 
@@ -40,7 +40,7 @@ const ChatArea = () => {
   };
   const { messages, sendMessage, currentChat, setCurrentChat } =
     useContext(GlobalContext);
-  const { currentUser, userDetails } = useContext(AuthContext);
+  const { userDetails, allUsers } = useContext(AuthContext);
   // const { socket, setRoomData } = useSocket();
 
   // useEffect(() => {
@@ -53,9 +53,17 @@ const ChatArea = () => {
   //   });
   // }, [socket, setRoomData]);
 
-  // useEffect(() => {
-
-  // }, [room]);
+  useEffect(() => {
+    if (room?.length && userDetails?.email) {
+      let usr = userDetails.chats.find((item) => item.roomId === room);
+      if (usr) {
+        setCurrentChat({
+          name: usr.name,
+          uid: usr.uid,
+        });
+      }
+    }
+  }, [room, userDetails, setCurrentChat]);
 
   useEffect(() => {
     setName(currentChat?.name);
@@ -65,10 +73,11 @@ const ChatArea = () => {
     e.preventDefault();
     if (!message) return;
     const newMessage = {
-      id: `${room}_MSG${shortUUID()}`,
-      author: userDetails.name?.toLowerCase(),
-      recepient: currentChat?.name?.toLowerCase(),
-      room,
+      id: `${room}_MSG${short().new()}`,
+      author: userDetails.uid,
+      recipient: currentChat.uid,
+      recipientName: currentChat.name,
+      roomId: room,
       message,
       isSent: false,
       isRead: false,
@@ -87,7 +96,7 @@ const ChatArea = () => {
   };
 
   useEffect(() => {
-    console.log(messages[room], messages);
+    console.log(messages);
   }, [messages, room]);
 
   return (
@@ -95,17 +104,19 @@ const ChatArea = () => {
       <Topbar name={name} />
       <div className={styles.chatArea}>
         <div className={styles.viewArea}>
-          {messages[room?.toLowerCase()]?.map((msg, i) => (
-            <MessageComponent
-              key={i}
-              msg={msg}
-              cls={
-                msg.author.toLowerCase() === userDetails?.name.toLowerCase()
-                  ? styles.sender
-                  : styles.owner
-              }
-            />
-          ))}
+          {messages &&
+            messages[room] &&
+            Object.values(messages[room])?.map((msg, i) => (
+              <MessageComponent
+                key={i}
+                msg={msg}
+                cls={
+                  msg.author === userDetails?.uid
+                    ? styles.sender
+                    : styles.receiver
+                }
+              />
+            ))}
         </div>
         <form onSubmit={handleMessageSubmit} className={styles.inputArea}>
           <textarea

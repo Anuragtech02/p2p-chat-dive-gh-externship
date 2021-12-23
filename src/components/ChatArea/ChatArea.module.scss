@@ -21,7 +21,7 @@
   .chatArea {
     height: calc(100% - 60px);
     position: relative;
-    padding: 10px 20px;
+    padding: 0 20px;
     .inputArea {
       @extend .flexRow;
       align-items: flex-start;
@@ -33,6 +33,8 @@
       border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 5px;
       overflow: hidden;
+      min-height: 40px;
+      max-height: 550px;
       //   @extend .flexRow;
       textarea {
         background: transparent !important;
@@ -84,7 +86,7 @@
           }
         }
       }
-      .sender {
+      .receiver {
         align-items: flex-start;
         .msgInner {
           background: rgba(0, 0, 0, 0.1);
