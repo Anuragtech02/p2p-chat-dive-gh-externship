@@ -53,10 +53,11 @@
     overflow-x: auto;
     overflow-y: hidden;
     .viewArea {
-      height: 90%;
+      max-height: calc(100% - 80px);
+      margin-bottom: 80px;
       // overflow-x: hidden;
-      // overflow-y: scroll;
-      @extend .flexCol;
+      overflow-y: auto;
+      // @extend .flexCol;
       justify-content: flex-end;
       .message {
         @extend .flexCol;

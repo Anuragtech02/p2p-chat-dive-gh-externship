@@ -47,6 +47,7 @@ const GlobalContextProvider = ({ children }) => {
       database.ref("messages").on("value", (snapshot) => {
         const messages = snapshot.val();
         if (messages) {
+          let deliveryJobs = [];
           Object.values(messages).forEach((roomMessage) => {
             if (roomMessage) {
               Object.values(roomMessage).forEach((message) => {
@@ -55,11 +56,14 @@ const GlobalContextProvider = ({ children }) => {
                   !message.isRead &&
                   message.recipient === currentUser.uid
                 ) {
-                  updateMessageAsDelivered(message.roomId, message.id);
+                  deliveryJobs.push(
+                    updateMessageAsDelivered(message.roomId, message.id)
+                  );
                 }
               });
             }
           });
+          Promise.all(deliveryJobs);
         }
         setMessages(messages);
       });
@@ -96,8 +100,8 @@ const GlobalContextProvider = ({ children }) => {
     }
   };
 
-  function updateMessageAsDelivered(roomId, id) {
-    database.ref("messages").child(roomId).child(id).update({
+  async function updateMessageAsDelivered(roomId, id) {
+    await database.ref("messages").child(roomId).child(id).update({
       isDelivered: true,
     });
   }

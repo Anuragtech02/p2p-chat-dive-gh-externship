@@ -56,6 +56,7 @@ const ChatArea = () => {
   const handleMessageSubmit = (e) => {
     e.preventDefault();
     if (!message) return;
+
     const newMessage = {
       author: userDetails.uid,
       recipient: currentChat.uid,
@@ -78,11 +79,16 @@ const ChatArea = () => {
     }
   };
 
+  useEffect(() => {
+    let viewArea = document.getElementById("viewArea");
+    viewArea.scrollTop = viewArea.scrollHeight;
+  }, [messages]);
+
   return (
     <div className={styles.container}>
       <Topbar name={name} />
       <div className={styles.chatArea}>
-        <div className={styles.viewArea}>
+        <div className={styles.viewArea} id="viewArea">
           {messages &&
             messages[room] &&
             Object.values(messages[room])?.map((msg, i) => (
