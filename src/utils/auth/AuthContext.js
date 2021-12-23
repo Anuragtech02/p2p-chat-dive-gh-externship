@@ -1,13 +1,11 @@
 import { createContext, useState, useEffect } from "react";
 import { CircularProgress } from "@material-ui/core";
-import { auth, database, firebase, firestore } from "./firebase";
+import { auth, firebase, firestore } from "./firebase";
 import styles from "./auth.module.scss";
-import { v4 as uuid } from "uuid";
 
 export const AuthContext = createContext({});
 
 const GLOBAL_REF = firestore.collection("global").doc("global");
-const ONLINE_REF = database.ref("online");
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -29,7 +27,6 @@ export const AuthProvider = ({ children }) => {
     };
     const checkUser = () => {
       firebase.auth().onAuthStateChanged((user) => {
-        // const { email, displayName } = { ...user };
         setCurrentUser(user);
         if (user && user?.email?.length) fetchUser(user);
         else setPending(false);
@@ -60,6 +57,7 @@ export const AuthProvider = ({ children }) => {
         .ref(".info/connected")
         .on("value", function (snapshot) {
           // If we're not currently connected, don't do anything.
+          // eslint-disable-next-line eqeqeq
           if (snapshot.val() == false) {
             return;
           }
@@ -109,7 +107,7 @@ export const AuthProvider = ({ children }) => {
         createdAt: new Date().toISOString(),
       });
       let globalColl = await getAllUsers();
-      let allUsers = globalColl.data().users || [];
+      let allUsers = globalColl.data()?.users || [];
       setAllUsers(allUsers);
       await GLOBAL_REF.update({ users: [...allUsers, { uid, email, name }] });
       if (cb) cb();
@@ -134,8 +132,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-const getServerTimestamp = () => {
-  return firebase.database.ServerValue.TIMESTAMP;
 };

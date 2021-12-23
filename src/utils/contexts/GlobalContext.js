@@ -1,14 +1,7 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { AuthContext } from "../auth/AuthContext";
 import { database, firestore } from "../auth/firebase";
 import { getStatus } from "../utils";
-// import { useSocket } from "../../components/Contexts/SocketContextProvider";
 
 export const GlobalContext = createContext({});
 
@@ -17,8 +10,7 @@ const GlobalContextProvider = ({ children }) => {
   const [onlinePeople, setOnlinePeople] = useState({});
   const [currentChat, setCurrentChat] = useState({});
 
-  const { currentUser, userDetails, allUsers, setAllUsers } =
-    useContext(AuthContext);
+  const { currentUser, userDetails, setAllUsers } = useContext(AuthContext);
 
   useEffect(() => {
     database.ref("status").on("value", (snapshot) => {
@@ -35,7 +27,7 @@ const GlobalContextProvider = ({ children }) => {
     const db = firestore.collection("global").doc("global");
     const fetchAllUsers = async () => {
       const snapshot = await db.get();
-      const all = snapshot.data().users || [];
+      const all = snapshot.data()?.users || [];
       setAllUsers(
         all
           .filter((user) => user.uid !== currentUser.uid)
@@ -45,7 +37,7 @@ const GlobalContextProvider = ({ children }) => {
           }))
       );
     };
-    if (currentUser.email) {
+    if (currentUser?.email) {
       fetchAllUsers();
     }
   }, [setAllUsers, currentUser, onlinePeople]);
@@ -63,7 +55,6 @@ const GlobalContextProvider = ({ children }) => {
                   !message.isRead &&
                   message.recipient === currentUser.uid
                 ) {
-                  console.log("inside");
                   updateMessageAsDelivered(message.roomId, message.id);
                 }
               });
@@ -79,9 +70,9 @@ const GlobalContextProvider = ({ children }) => {
     };
   }, [currentUser]);
 
-  useEffect(() => {
-    console.log({ currentUser, userDetails, onlinePeople, allUsers });
-  }, [currentUser, userDetails, onlinePeople, allUsers]);
+  // useEffect(() => {
+  //   console.log({ currentUser, userDetails, onlinePeople, allUsers });
+  // }, [currentUser, userDetails, onlinePeople, allUsers]);
 
   const sendMessage = async (msg, isNew = false) => {
     let key = database.ref("messages").child(msg.roomId).push().key;
@@ -90,7 +81,6 @@ const GlobalContextProvider = ({ children }) => {
       .child(msg.roomId)
       .child(key)
       .set({ ...msg, id: key });
-    console.log({ msg });
     if (
       userDetails.chats.findIndex((item) => item.roomId === msg.roomId) === -1
     ) {

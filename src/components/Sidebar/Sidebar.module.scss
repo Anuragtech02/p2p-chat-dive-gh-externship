@@ -66,7 +66,7 @@
         .chatUserInfo {
           padding-left: 10px;
           width: 70%;
-          @extend .flexRow;
+          @extend .flexCol;
           h6 {
             font-weight: 600;
             color: rgba(0, 0, 0, 0.575);
@@ -104,11 +104,12 @@
         color: rgba(0, 0, 0, 0.6);
       }
       .status {
-        width: 5px;
-        height: 5px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
         &.online {
           background: #00c853;
+          border: 1.5px solid white;
         }
         &.offline {
           background: #c2c2c2;

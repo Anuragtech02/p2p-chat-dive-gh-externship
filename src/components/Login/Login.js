@@ -18,7 +18,6 @@ const Login = () => {
 
   useEffect(() => {
     if (currentUser?.email) {
-      console.log({ navigate });
       navigate(`/`);
     }
   }, [currentUser, navigate]);

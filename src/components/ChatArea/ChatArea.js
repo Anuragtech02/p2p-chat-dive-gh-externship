@@ -6,12 +6,7 @@ import { IconButton, Menu, MenuItem } from "@material-ui/core";
 import { Check, Send, Smile } from "react-feather";
 import { GlobalContext } from "../../utils/contexts/GlobalContext";
 import { AuthContext } from "../../utils/auth/AuthContext";
-// import { useSocket } from "../Contexts/SocketContextProvider";
 import clsx from "clsx";
-import moment from "moment";
-import short from "short-uuid";
-
-// const ENDPOINT = "http://localhost:5000/";
 
 const ChatArea = () => {
   const { room } = useParams();
@@ -40,18 +35,7 @@ const ChatArea = () => {
   };
   const { messages, sendMessage, currentChat, setCurrentChat } =
     useContext(GlobalContext);
-  const { userDetails, allUsers } = useContext(AuthContext);
-  // const { socket, setRoomData } = useSocket();
-
-  // useEffect(() => {
-  //   socket.on("connect", () => {
-  //     console.log("FCon");
-  //   });
-  //   socket.on("room-data", (data) => {
-  //     console.log({ data });
-  //     setRoomData(data);
-  //   });
-  // }, [socket, setRoomData]);
+  const { userDetails } = useContext(AuthContext);
 
   useEffect(() => {
     if (room?.length && userDetails?.email) {
@@ -73,7 +57,6 @@ const ChatArea = () => {
     e.preventDefault();
     if (!message) return;
     const newMessage = {
-      id: `${room}_MSG${short().new()}`,
       author: userDetails.uid,
       recipient: currentChat.uid,
       recipientName: currentChat.name,
@@ -94,10 +77,6 @@ const ChatArea = () => {
       handleMessageSubmit(e);
     }
   };
-
-  useEffect(() => {
-    console.log(messages);
-  }, [messages, room]);
 
   return (
     <div className={styles.container}>

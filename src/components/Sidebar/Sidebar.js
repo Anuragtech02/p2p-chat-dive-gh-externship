@@ -4,7 +4,7 @@ import SidebarActions from "./SidebarActions";
 import { Search } from "react-feather";
 import { Avatar } from "@material-ui/core";
 import portraitIcon from "../../Assets/portrait.jpg";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate } from "react-router";
 import clsx from "clsx";
 import { AuthContext } from "../../utils/auth/AuthContext";
 import { GlobalContext } from "../../utils/contexts/GlobalContext";
@@ -12,15 +12,14 @@ import { getUserData, creatRoom, getRoomId } from "../../utils/utils";
 
 const Sidebar = () => {
   const [search, setSearch] = useState("");
-  const [current, setCurrent] = useState("");
   const [users, setUsers] = useState();
   const [usersCopy, setUsersCopy] = useState();
 
   const navigate = useNavigate();
-  const { name, room } = useParams();
-  // const { roomData } = useSocket();
+
   const { allUsers, userDetails } = useContext(AuthContext);
-  const { onlinePeople, setCurrentChat } = useContext(GlobalContext);
+  const { onlinePeople, setCurrentChat, currentChat, messages } =
+    useContext(GlobalContext);
 
   const handleClickChat = (name, email, uid) => {
     let roomId = getRoomId(email, userDetails.chats);
@@ -36,32 +35,20 @@ const Sidebar = () => {
   };
 
   useEffect(() => {
-    setCurrent(name);
-  }, [name]);
-
-  useEffect(() => {
-    console.log({ allUsers, onlinePeople });
     if (allUsers?.length) {
-      setUsers(allUsers.map((chat) => getUserData(allUsers, chat.uid)));
+      let tempUsers = allUsers.map((chat) => getUserData(allUsers, chat.uid));
+      setUsersCopy(tempUsers);
+      setUsers(tempUsers);
     }
   }, [allUsers, onlinePeople]);
 
-  // useEffect(() => {
-  //   if (room?.length) {
-  //     if (userDetails.chats.includes()) {
-  //     }
-  //   }
-  // }, [room, userDetails]);
-
-  // React.useEffect(() => {
-  //   if (roomData?.room && currentUser?.name) {
-  //     const data = roomData.users?.filter(
-  //       (user) => user.name.toLowerCase() !== currentUser.name.toLowerCase()
-  //     );
-  //     setUsers(data);
-  //     setUsersCopy(data);
-  //   }
-  // }, [roomData, currentUser]);
+  useEffect(() => {
+    if (search?.length) {
+      setUsers(usersCopy.filter((user) => user.name.includes(search)));
+    } else {
+      setUsers(usersCopy);
+    }
+  }, [search, usersCopy]);
 
   return (
     <aside className={styles.container}>
@@ -93,7 +80,7 @@ const Sidebar = () => {
                   key={i}
                   className={clsx(
                     styles.chat,
-                    current === chat?.name ? styles.selectedChat : ""
+                    currentChat?.name === chat?.name ? styles.selectedChat : ""
                   )}
                 >
                   <Avatar
@@ -103,16 +90,20 @@ const Sidebar = () => {
                     alt="profile-photo"
                   />
                   <div className={styles.chatUserInfo}>
-                    <h6>{chat?.name}</h6>
-                    {/* <p>{messages[room]?.newMessage}</p> */}
-                    <span
-                      className={clsx(
-                        styles.status,
-                        chat.status === "online"
-                          ? styles.online
-                          : styles.offline
-                      )}
-                    ></span>
+                    <div style={{ width: "100%" }} className={styles.flexRow}>
+                      <h6>{chat?.name}</h6>
+                      <span
+                        className={clsx(
+                          styles.status,
+                          chat.status === "online"
+                            ? styles.online
+                            : styles.offline
+                        )}
+                      ></span>
+                    </div>
+                    <p>
+                      {getLastMessage(messages, userDetails.chats, chat?.uid)}
+                    </p>
                   </div>
                 </div>
               ))
@@ -128,3 +119,14 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
+const getLastMessage = (messages, chats, uid) => {
+  if (messages) {
+    let tempChat = chats.find((item) => item.uid === uid);
+    if (tempChat?.roomId) {
+      let chats = Object.values(messages[tempChat.roomId]);
+      return chats[chats.length - 1]?.message?.slice(0, 10) + "...";
+    }
+  }
+  return "";
+};
