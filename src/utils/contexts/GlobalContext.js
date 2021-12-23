@@ -54,21 +54,22 @@ const GlobalContextProvider = ({ children }) => {
     if (currentUser?.email) {
       database.ref("messages").on("value", (snapshot) => {
         const messages = snapshot.val();
-
-        Object.values(messages).forEach((roomMessage) => {
-          if (roomMessage) {
-            Object.values(roomMessage).forEach((message) => {
-              if (
-                !message.isDelivered &&
-                !message.isRead &&
-                message.recipient === currentUser.uid
-              ) {
-                console.log("inside");
-                updateMessageAsDelivered(message.roomId, message.id);
-              }
-            });
-          }
-        });
+        if (messages) {
+          Object.values(messages).forEach((roomMessage) => {
+            if (roomMessage) {
+              Object.values(roomMessage).forEach((message) => {
+                if (
+                  !message.isDelivered &&
+                  !message.isRead &&
+                  message.recipient === currentUser.uid
+                ) {
+                  console.log("inside");
+                  updateMessageAsDelivered(message.roomId, message.id);
+                }
+              });
+            }
+          });
+        }
         setMessages(messages);
       });
     }
