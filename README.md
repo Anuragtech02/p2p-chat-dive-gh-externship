@@ -61,7 +61,7 @@ Used for retreiving all users at once from database.
 ```
 
 What is roomId? <br />
-When two users try to communicate with each other, there messaging connection is setup through a common room for simplicity. All their messages travel through and get stored in that room on firebase realtime database.
+When two users try to communicate with each other, their messaging connection is setup through a common room for simplicity. All their messages travel through and get stored in that room on firebase realtime database.
 
 **Status** <br />
 Used to check if the user is online or offline.
@@ -75,3 +75,11 @@ Used to check if the user is online or offline.
     }
 }
 ```
+
+### What does the application lack right now?
+
+- As of now, there is no notification functionality, it'd be nice to have a little popup or some sound when someone sends a message.
+- No security <br />
+  Application is not very secure right now, backend transactions are secure because of firebase but other things like the message itself is not, anyone who owns the database can direclty read it. We can implement encryption to add more securiy.
+- Not optimized <br />
+  Due to strict deadlines, it was certainly not possibly to cover all the corner cases due to which the application might not be as smooth as it could have been. It may not be able to handle a lot of users simultaneously, or may not be able to handle unknown errors.
