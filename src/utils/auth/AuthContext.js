@@ -42,11 +42,13 @@ export const AuthProvider = ({ children }) => {
     let isOfflineForDatabase = {
       state: "offline",
       last_changed: firebase.database.ServerValue.TIMESTAMP,
+      uid: currentUser?.uid,
     };
 
     let isOnlineForDatabase = {
       state: "online",
       last_changed: firebase.database.ServerValue.TIMESTAMP,
+      uid: currentUser?.uid,
     };
 
     if (currentUser?.uid) {
@@ -94,8 +96,11 @@ export const AuthProvider = ({ children }) => {
 
   async function createNewUser(name, email, password, cb) {
     try {
-      await auth.createUserWithEmailAndPassword(email, password);
-      const uid = firestore.collection("users").doc().id;
+      let userCredential = await auth.createUserWithEmailAndPassword(
+        email,
+        password
+      );
+      const uid = userCredential.user.uid;
       await firestore.collection("users").doc(uid).set({
         uid,
         name,
@@ -106,7 +111,7 @@ export const AuthProvider = ({ children }) => {
       let globalColl = await getAllUsers();
       let allUsers = globalColl.data().users || [];
       setAllUsers(allUsers);
-      await GLOBAL_REF.update({ users: [...allUsers, { uid, email }] });
+      await GLOBAL_REF.update({ users: [...allUsers, { uid, email, name }] });
       if (cb) cb();
     } catch (error) {
       if (cb) cb(error);

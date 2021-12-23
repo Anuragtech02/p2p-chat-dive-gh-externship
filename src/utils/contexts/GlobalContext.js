@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { AuthContext } from "../auth/AuthContext";
 import { database, firestore } from "../auth/firebase";
+import { getStatus } from "../utils";
 // import { useSocket } from "../../components/Contexts/SocketContextProvider";
 
 export const GlobalContext = createContext({});
@@ -14,20 +15,19 @@ export const GlobalContext = createContext({});
 const GlobalContextProvider = ({ children }) => {
   const [messages, setMessages] = useState({});
   const [onlinePeople, setOnlinePeople] = useState({});
-  const [offlinePeople, setOfflinePeople] = useState([]);
   const [currentChat, setCurrentChat] = useState({});
 
   const { currentUser, userDetails, allUsers, setAllUsers } =
     useContext(AuthContext);
 
   useEffect(() => {
-    database.ref("online").on("value", (snapshot) => {
-      const online = snapshot.val() || {};
-      setOnlinePeople(online);
+    database.ref("status").on("value", (snapshot) => {
+      const all = snapshot.val() || {};
+      setOnlinePeople(Object.values(all));
     });
 
     return () => {
-      database.ref("online").off();
+      database.ref("status").off();
     };
   }, []);
 
@@ -35,20 +35,20 @@ const GlobalContextProvider = ({ children }) => {
     const db = firestore.collection("global").doc("global");
     const fetchAllUsers = async () => {
       const snapshot = await db.get();
-      const allUsers = snapshot.data().users || [];
-      setAllUsers(allUsers);
-    };
-    fetchAllUsers();
-  }, [setAllUsers]);
-
-  useEffect(() => {
-    if (allUsers?.length || onlinePeople?.length) {
-      const offline = allUsers.filter(
-        (user) => !Object.values(onlinePeople).includes(user)
+      const all = snapshot.data().users || [];
+      setAllUsers(
+        all
+          .filter((user) => user.uid !== currentUser.uid)
+          .map((user) => ({
+            ...user,
+            status: getStatus(onlinePeople, user.uid),
+          }))
       );
-      setOfflinePeople(offline);
+    };
+    if (currentUser.email) {
+      fetchAllUsers();
     }
-  }, [onlinePeople, allUsers]);
+  }, [setAllUsers, currentUser, onlinePeople]);
 
   useEffect(() => {
     if (currentUser?.email) {
@@ -61,7 +61,11 @@ const GlobalContextProvider = ({ children }) => {
     return () => {
       database.ref("messages").off();
     };
-  }, [currentUser, onlinePeople]);
+  }, [currentUser]);
+
+  useEffect(() => {
+    console.log({ currentUser, userDetails, onlinePeople, allUsers });
+  }, [currentUser, userDetails, onlinePeople, allUsers]);
 
   const sendMessage = (msg, isNew = false) => {
     database.ref(`messages/${msg.roomId}`).once("value", (snapshot) => {
@@ -76,7 +80,6 @@ const GlobalContextProvider = ({ children }) => {
       value={{
         messages,
         onlinePeople,
-        offlinePeople,
         sendMessage,
         currentChat,
         setCurrentChat,

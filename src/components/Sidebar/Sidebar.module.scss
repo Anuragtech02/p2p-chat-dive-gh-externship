@@ -36,8 +36,10 @@
     }
 
     .chats {
+      position: relative;
       width: 100%;
       padding: 20px 0;
+      height: calc(100% - 70px);
       h6:first-of-type {
         text-align: left;
         font-weight: 700;
@@ -64,11 +66,13 @@
         .chatUserInfo {
           padding-left: 10px;
           width: 70%;
+          @extend .flexRow;
           h6 {
             font-weight: 600;
             color: rgba(0, 0, 0, 0.575);
             font-family: "Roboto", sans-serif;
             text-transform: capitalize;
+            flex: 1;
           }
           p {
             color: rgba(0, 0, 0, 0.5);
@@ -90,6 +94,24 @@
           p {
             color: #25323770;
           }
+        }
+      }
+      .noChats {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: rgba(0, 0, 0, 0.6);
+      }
+      .status {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        &.online {
+          background: #00c853;
+        }
+        &.offline {
+          background: #c2c2c2;
         }
       }
     }

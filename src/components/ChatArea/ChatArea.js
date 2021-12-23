@@ -53,6 +53,10 @@ const ChatArea = () => {
   //   });
   // }, [socket, setRoomData]);
 
+  // useEffect(() => {
+
+  // }, [room]);
+
   useEffect(() => {
     setName(currentChat?.name);
   }, [currentChat]);
