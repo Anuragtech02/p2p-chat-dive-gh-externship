@@ -12,7 +12,7 @@ How the data is stored on firebase using both firestore and realtime database.
 
 **User**
 
-```ts
+```typescript
 {
     uid: string, // same as firebase auth uid
     name: string,
@@ -31,7 +31,7 @@ How the data is stored on firebase using both firestore and realtime database.
 **Global** <br />
 Used for retreiving all users at once from database.
 
-```ts
+```typescript
 {
   users: [{ email: string, name: string, uid: string }];
 }
@@ -41,7 +41,7 @@ Used for retreiving all users at once from database.
 
 **Messages**
 
-```ts
+```typescript
 {
     roomId: {
         messageId: {
@@ -66,7 +66,7 @@ When two users try to communicate with each other, their messaging connection is
 **Status** <br />
 Used to check if the user is online or offline.
 
-```ts
+```typescript
 {
     uid: {
         last_changed: Date,
